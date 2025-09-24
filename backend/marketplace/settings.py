@@ -89,11 +89,11 @@ WSGI_APPLICATION = 'marketplace.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': env('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': env('DB_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3')),
-        'USER': env('DB_USER', default=''),
-        'PASSWORD': env('DB_PASSWORD', default=''),
-        'HOST': env('DB_HOST', default=''),
-        'PORT': env('DB_PORT', default=''),
+        'NAME': env('MYSQL_DATABASE', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': env('MYSQL_USER', default=''),
+        'PASSWORD': env('MYSQL_PASSWORD', default=''),
+        'HOST': env('MYSQL_HOST', default=''),
+        'PORT': env('MYSQL_PORT', default=''),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         } if env('DB_ENGINE', default='django.db.backends.sqlite3') == 'django.db.backends.mysql' else {},

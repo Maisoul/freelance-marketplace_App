@@ -26,9 +26,9 @@ export const AuthPage = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   return (
-    <Box minH="100vh" bgGradient={bgGradient} display="flex" alignItems="center">
-      <Container maxW="md" py={10}>
-        <Card shadow="2xl" bg={cardBg} borderColor={borderColor}>
+    <Box minH="100vh" bgGradient={bgGradient} display="flex" justifyContent="center" alignItems="center" marginLeft="280" width="100%">
+      <Container maxW="lg" py={10} centerContent>
+        <Card shadow="2xl" bg={cardBg} borderColor={borderColor} width="100%">
           <CardBody p={8}>
             <VStack spacing={6} align="stretch">
               {/* Logo and Header */}

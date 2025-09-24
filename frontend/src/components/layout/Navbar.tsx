@@ -1,11 +1,9 @@
-import React from 'react';
 import {
   Box,
   Flex,
   HStack,
   Button,
   Spacer,
-  Link as ChakraLink,
   useColorModeValue,
   Image,
   Heading,

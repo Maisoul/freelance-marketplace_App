@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Text, Badge } from '@chakra-ui/react';
 
 interface PaymentStatusProps {

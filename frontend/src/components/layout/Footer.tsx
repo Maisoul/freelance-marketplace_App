@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Container,
@@ -12,7 +11,8 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+// Add these imports for social media icons
+import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa';
 
 export default function Footer() {
   const bg = useColorModeValue('gray.50', 'gray.900');
@@ -43,16 +43,16 @@ export default function Footer() {
               Services
             </Heading>
             <VStack align="start" spacing={2}>
-              <ChakraLink as={Link} to="/services/web-development" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Web Development
               </ChakraLink>
-              <ChakraLink as={Link} to="/services/ai-ml" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 AI & Machine Learning
               </ChakraLink>
-              <ChakraLink as={Link} to="/services/cybersecurity" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Cybersecurity
               </ChakraLink>
-              <ChakraLink as={Link} to="/services/technical-writing" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Technical Writing
               </ChakraLink>
             </VStack>
@@ -64,16 +64,16 @@ export default function Footer() {
               Company
             </Heading>
             <VStack align="start" spacing={2}>
-              <ChakraLink as={Link} to="/about" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 About Us
               </ChakraLink>
-              <ChakraLink as={Link} to="/contact" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Contact
               </ChakraLink>
-              <ChakraLink as={Link} to="/careers" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Careers
               </ChakraLink>
-              <ChakraLink as={Link} to="/blog" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Blog
               </ChakraLink>
             </VStack>
@@ -85,16 +85,16 @@ export default function Footer() {
               Legal & Support
             </Heading>
             <VStack align="start" spacing={2}>
-              <ChakraLink as={Link} to="/privacy" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Privacy Policy
               </ChakraLink>
-              <ChakraLink as={Link} to="/terms" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Terms of Service
               </ChakraLink>
-              <ChakraLink as={Link} to="/support" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Support
               </ChakraLink>
-              <ChakraLink as={Link} to="/help" color={textColor} fontSize="sm">
+              <ChakraLink as={Link} to="#" color={textColor} fontSize="sm">
                 Help Center
               </ChakraLink>
             </VStack>
@@ -115,7 +115,7 @@ export default function Footer() {
                 color={textColor}
                 _hover={{ color: 'blue.500' }}
               >
-                <Icon as={ExternalLinkIcon} w={4} h={4} />
+                <Icon as={FaLinkedin} w={5} h={5} />
               </ChakraLink>
               <ChakraLink
                 href="https://twitter.com"
@@ -124,7 +124,7 @@ export default function Footer() {
                 color={textColor}
                 _hover={{ color: 'blue.500' }}
               >
-                <Icon as={ExternalLinkIcon} w={4} h={4} />
+                <Icon as={FaTwitter} w={5} h={5} />
               </ChakraLink>
               <ChakraLink
                 href="https://github.com"
@@ -133,7 +133,7 @@ export default function Footer() {
                 color={textColor}
                 _hover={{ color: 'blue.500' }}
               >
-                <Icon as={ExternalLinkIcon} w={4} h={4} />
+                <Icon as={FaGithub} w={5} h={5} />
               </ChakraLink>
             </HStack>
           </HStack>

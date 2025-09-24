@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Box, Button, FormControl, FormLabel, Input, VStack, FormErrorMessage, useToast } from '@chakra-ui/react';
 import { useAuth } from '../../contexts/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
   const { login, error } = useAuth();
   const toast = useToast();
 
@@ -29,7 +31,7 @@ export const LoginForm = () => {
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit} width="100%">
+    <Box as="form" onSubmit={handleSubmit}>
       <VStack spacing={6} align="stretch">
         <FormControl isInvalid={error?.field === 'email'}>
           <FormLabel fontWeight="semibold" color="gray.700">Email Address</FormLabel>
@@ -86,6 +88,15 @@ export const LoginForm = () => {
         >
           Log In
         </Button>
+        {/* Back to Home */}
+        <Button
+                variant="link"
+                colorScheme="red"
+                onClick={() => navigate('/')}
+                size="sm"
+              >
+                ← Back to Home
+              </Button>
       </VStack>
     </Box>
   );

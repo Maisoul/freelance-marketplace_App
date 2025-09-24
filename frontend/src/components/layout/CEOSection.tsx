@@ -1,5 +1,4 @@
-import React from 'react';
-import { Box, Image, Text, Button, VStack, HStack, Icon } from '@chakra-ui/react';
+import { Box, Image, Text, Button, VStack, HStack } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 export default function CEOSection() {
@@ -29,7 +28,7 @@ export default function CEOSection() {
           <Text fontSize="2xl" fontWeight="bold" color="blue.600">
             CEO & Founder
           </Text>
-          <Text fontSize="lg" color="gray.600" maxW="sm">
+          <Text fontSize="lg" color="silver.600" maxW="sm">
             Visionary leader driving innovation in the freelance marketplace with 
             AI-powered solutions and exceptional service delivery.
           </Text>
@@ -51,7 +50,7 @@ export default function CEOSection() {
           </Button>
           <Button
             as="a"
-            href="https://linkedin.com"
+            href="https://www.linkedin.com/in/david-maiso-91585a21b"
             target="_blank"
             rel="noopener noreferrer"
             colorScheme="blue"

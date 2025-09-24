@@ -62,7 +62,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <Box minH="100vh" bgGradient="linear(to-b, blue.50, white)" display="flex" alignItems="center">
+    <Box minH="100vh" bgGradient="linear(to-b, blue.50, white)" display="flex" alignItems="center" marginLeft="400">
       <Container maxW="md">
         <Card shadow="2xl">
           <CardBody p={8}>
