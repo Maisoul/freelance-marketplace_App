@@ -1,33 +1,39 @@
-# Backend Dockerfile
-FROM python:3.11-slim as base
+FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
+# Set work directory
 WORKDIR /app
 
-# System deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc default-libmysqlclient-dev build-essential pkg-config \
- && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+        default-libmysqlclient-dev \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps
-COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt
+# Install Python dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# App source
-COPY . /app
+# Copy project
+COPY . /app/
 
-# Runtime env
-ENV DJANGO_SETTINGS_MODULE=marketplace.settings \
-    PYTHONPATH=/app
+# Create directories for media and static files
+RUN mkdir -p /app/media /app/staticfiles /app/logs
 
-# Collect static (safe if not configured)
-RUN python manage.py collectstatic --noinput || true
+# Create non-root user
+RUN adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser:appuser /app
+USER appuser
 
 # Expose port
 EXPOSE 8000
 
-# Start server
-CMD ["gunicorn", "marketplace.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Default command
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

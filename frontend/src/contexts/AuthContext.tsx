@@ -82,9 +82,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = async (userData: RegisterData) => {
     try {
       setError(null);
-      // Choose endpoint based on role in payload if provided; default to client
+      // Only allow client registration - experts are invited only
       const endpoint = '/api/accounts/register/client/';
-      const response = await axiosInstance.post<{ access?: string; refresh?: string }>(endpoint, userData);
+      
+      // Transform frontend data to match backend expectations
+      const backendData = {
+        username: userData.email, // Use email as username
+        email: userData.email,
+        password: userData.password,
+        password_confirm: userData.password_confirm,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        user_type: 'student', // Default to student
+      };
+      
+      const response = await axiosInstance.post<{ access?: string; refresh?: string }>(endpoint, backendData);
       const { access, refresh } = response.data;
       
       if (response.data?.access && response.data?.refresh) {

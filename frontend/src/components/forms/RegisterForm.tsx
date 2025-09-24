@@ -1,28 +1,21 @@
 import { useState } from 'react';
-import { Box, Button, FormControl, FormLabel, Input, VStack, FormErrorMessage, useToast, Select } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, VStack, FormErrorMessage, useToast } from '@chakra-ui/react';
 import { useAuth } from '../../contexts/useAuth';
-
-interface RegisterFormData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: 'client' | 'expert';
-}
+import type { RegisterData } from '../../contexts/AuthContext.types';
 
 export const RegisterForm = () => {
-  const [formData, setFormData] = useState<RegisterFormData>({
+  const [formData, setFormData] = useState<RegisterData>({
     email: '',
     password: '',
+    password_confirm: '',
     firstName: '',
     lastName: '',
-    role: 'client',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, error } = useAuth();
   const toast = useToast();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -50,16 +43,20 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit} width="100%" maxW="400px" p={4}>
-      <VStack spacing={4} align="stretch">
+    <Box as="form" onSubmit={handleSubmit} width="100%">
+      <VStack spacing={6} align="stretch">
         <FormControl isInvalid={error?.field === 'email'}>
-          <FormLabel>Email</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">Email Address</FormLabel>
           <Input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'email' && (
@@ -68,13 +65,17 @@ export const RegisterForm = () => {
         </FormControl>
 
         <FormControl isInvalid={error?.field === 'password'}>
-          <FormLabel>Password</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">Password</FormLabel>
           <Input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
             placeholder="Enter your password"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'password' && (
@@ -82,14 +83,37 @@ export const RegisterForm = () => {
           )}
         </FormControl>
 
+        <FormControl isInvalid={error?.field === 'password_confirm'}>
+          <FormLabel fontWeight="semibold" color="gray.700">Confirm Password</FormLabel>
+          <Input
+            type="password"
+            name="password_confirm"
+            value={formData.password_confirm}
+            onChange={handleChange}
+            placeholder="Confirm your password"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
+            required
+          />
+          {error?.field === 'password_confirm' && (
+            <FormErrorMessage>{error.message}</FormErrorMessage>
+          )}
+        </FormControl>
+
         <FormControl isInvalid={error?.field === 'firstName'}>
-          <FormLabel>First Name</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">First Name</FormLabel>
           <Input
             type="text"
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
             placeholder="Enter your first name"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'firstName' && (
@@ -98,13 +122,17 @@ export const RegisterForm = () => {
         </FormControl>
 
         <FormControl isInvalid={error?.field === 'lastName'}>
-          <FormLabel>Last Name</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">Last Name</FormLabel>
           <Input
             type="text"
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
             placeholder="Enter your last name"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'lastName' && (
@@ -112,19 +140,8 @@ export const RegisterForm = () => {
           )}
         </FormControl>
 
-        <FormControl isInvalid={error?.field === 'role'}>
-          <FormLabel>I want to</FormLabel>
-          <Select name="role" value={formData.role} onChange={handleChange}>
-            <option value="client">Hire an Expert</option>
-            <option value="expert">Work as an Expert</option>
-          </Select>
-          {error?.field === 'role' && (
-            <FormErrorMessage>{error.message}</FormErrorMessage>
-          )}
-        </FormControl>
-
         {error && !error.field && (
-          <Box color="red.500" fontSize="sm">
+          <Box color="red.500" fontSize="sm" textAlign="center" p={2} bg="red.50" borderRadius="md">
             {error.message}
           </Box>
         )}
@@ -134,7 +151,11 @@ export const RegisterForm = () => {
           colorScheme="blue"
           isLoading={isSubmitting}
           loadingText="Creating account..."
+          size="lg"
           width="100%"
+          borderRadius="md"
+          fontWeight="semibold"
+          py={6}
         >
           Create Account
         </Button>

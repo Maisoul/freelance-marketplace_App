@@ -29,15 +29,19 @@ export const LoginForm = () => {
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit} width="100%" maxW="400px" p={4}>
-      <VStack spacing={4} align="stretch">
+    <Box as="form" onSubmit={handleSubmit} width="100%">
+      <VStack spacing={6} align="stretch">
         <FormControl isInvalid={error?.field === 'email'}>
-          <FormLabel>Email</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">Email Address</FormLabel>
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'email' && (
@@ -46,12 +50,16 @@ export const LoginForm = () => {
         </FormControl>
 
         <FormControl isInvalid={error?.field === 'password'}>
-          <FormLabel>Password</FormLabel>
+          <FormLabel fontWeight="semibold" color="gray.700">Password</FormLabel>
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
+            size="lg"
+            borderRadius="md"
+            borderColor="gray.300"
+            _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3182ce' }}
             required
           />
           {error?.field === 'password' && (
@@ -60,7 +68,7 @@ export const LoginForm = () => {
         </FormControl>
 
         {error && !error.field && (
-          <Box color="red.500" fontSize="sm">
+          <Box color="red.500" fontSize="sm" textAlign="center" p={2} bg="red.50" borderRadius="md">
             {error.message}
           </Box>
         )}
@@ -70,7 +78,11 @@ export const LoginForm = () => {
           colorScheme="blue"
           isLoading={isSubmitting}
           loadingText="Logging in..."
+          size="lg"
           width="100%"
+          borderRadius="md"
+          fontWeight="semibold"
+          py={6}
         >
           Log In
         </Button>

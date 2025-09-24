@@ -1,44 +1,160 @@
-version: '3.9'
+version: '3.8'
 
 services:
+  # MySQL Database
   db:
-    image: mysql:8
+    image: mysql:8.0
+    container_name: maiguru_db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    command: --default-authentication-plugin=mysql_native_password
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-maiguru123}
+      MYSQL_DATABASE: ${DB_NAME:-maiguru_db}
+      MYSQL_USER: ${DB_USER:-maiguru_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-maiguru123}
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - maiguru_network
 
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: maiguru_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - maiguru_network
+
+  # Django Backend
   backend:
     build:
       context: ./backend
-    env_file: .env
+      dockerfile: Dockerfile
+    container_name: maiguru_backend
+    restart: unless-stopped
     environment:
-      DJANGO_SETTINGS_MODULE: marketplace.settings
-      MYSQL_HOST: db
-    depends_on:
-      - db
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me}
+      - DB_NAME=${DB_NAME:-maiguru_db}
+      - DB_USER=${DB_USER:-maiguru_user}
+      - DB_PASSWORD=${DB_PASSWORD:-maiguru123}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
+      - MPESA_CONSUMER_KEY=${MPESA_CONSUMER_KEY}
+      - MPESA_CONSUMER_SECRET=${MPESA_CONSUMER_SECRET}
+      - WISE_API_KEY=${WISE_API_KEY}
     ports:
       - "8000:8000"
     volumes:
+      - ./backend:/app
       - backend_media:/app/media
+      - backend_static:/app/staticfiles
+    depends_on:
+      - db
+      - redis
+    networks:
+      - maiguru_network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py create_initial_superuser &&
+             python manage.py runserver 0.0.0.0:8000"
 
+  # Celery Worker
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maiguru_celery
+    restart: unless-stopped
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me}
+      - DB_NAME=${DB_NAME:-maiguru_db}
+      - DB_USER=${DB_USER:-maiguru_user}
+      - DB_PASSWORD=${DB_PASSWORD:-maiguru123}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - maiguru_network
+    command: celery -A marketplace worker -l info
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maiguru_celery_beat
+    restart: unless-stopped
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me}
+      - DB_NAME=${DB_NAME:-maiguru_db}
+      - DB_USER=${DB_USER:-maiguru_user}
+      - DB_PASSWORD=${DB_PASSWORD:-maiguru123}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - maiguru_network
+    command: celery -A marketplace beat -l info
+
+  # React Frontend
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
+    container_name: maiguru_frontend
+    restart: unless-stopped
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - VITE_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
-    ports:
-      - "5173:80"
+    networks:
+      - maiguru_network
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
-  db_data:
+  mysql_data:
+  redis_data:
   backend_media:
+  backend_static:
+
+networks:
+  maiguru_network:
+    driver: bridge

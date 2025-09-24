@@ -1,116 +1,145 @@
+"""
+Serializers for tasks app
+"""
 from rest_framework import serializers
-from .models import Task
-from .models.submission import TaskSubmission
+from .models import Task, TaskFile, TaskSubmission, TaskMessage, TaskReview, TaskDispute
 from accounts.serializers import UserSerializer
-from django.utils.timesince import timesince
-from django.utils import timezone
-from django.conf import settings
+
+
+class TaskFileSerializer(serializers.ModelSerializer):
+    """Serializer for TaskFile"""
+    uploaded_by_name = serializers.CharField(source='uploaded_by.get_full_name', read_only=True)
+    
+    class Meta:
+        model = TaskFile
+        fields = [
+            'id', 'file', 'original_filename', 'file_size', 'file_type',
+            'uploaded_by_name', 'uploaded_at', 'description'
+        ]
+        read_only_fields = ['id', 'uploaded_by', 'uploaded_at']
+
 
 class TaskSerializer(serializers.ModelSerializer):
-    client = UserSerializer(read_only=True)
+    """Serializer for Task"""
+    client_name = serializers.CharField(source='client.get_full_name', read_only=True)
+    assigned_expert_name = serializers.CharField(source='assigned_expert.get_full_name', read_only=True)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    complexity_display = serializers.CharField(source='get_complexity_display', read_only=True)
+    budget_range_display = serializers.CharField(source='get_budget_range_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
     time_to_deadline = serializers.SerializerMethodField()
-
+    is_overdue = serializers.BooleanField(read_only=True)
+    files = TaskFileSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Task
-        fields = "__all__"
-
-    def validate(self, data):
-        # Ensure required fields are present
-        required_fields = ["category", "deadline", "description", "complexity", "budget_range"]
-        for field in required_fields:
-            if not data.get(field):
-                raise serializers.ValidationError({field: f"{field} is required."})
-        
-        # Deadline must be in the future
-        if "deadline" in data and data["deadline"] <= timezone.now():
-            raise serializers.ValidationError({"deadline": "Deadline must be in the future."})
-        
-        # Validate attached file if present
-        attached_file = data.get('attached_file')
-        if attached_file:
-            if not hasattr(attached_file, 'content_type'):
-                raise serializers.ValidationError({"attached_file": "Invalid file upload"})
-            
-            # Validate file size
-            if attached_file.size > settings.MAX_UPLOAD_SIZE:
-                max_size_mb = settings.MAX_UPLOAD_SIZE / (1024 * 1024)
-                raise serializers.ValidationError(
-                    {"attached_file": f"File size must not exceed {max_size_mb}MB"}
-                )
-            
-            # Validate content type
-            if attached_file.content_type not in settings.CONTENT_TYPES:
-                raise serializers.ValidationError(
-                    {"attached_file": "File type not allowed"}
-                )
-        
-        return data
-
+        fields = [
+            'id', 'title', 'description', 'category', 'category_display',
+            'complexity', 'complexity_display', 'budget_range', 'budget_range_display',
+            'deadline', 'client', 'client_name', 'assigned_expert', 'assigned_expert_name',
+            'status', 'status_display', 'progress_percentage', 'estimated_price',
+            'final_price', 'ai_suggested_price', 'additional_comments',
+            'client_requirements', 'expert_notes', 'time_to_deadline', 'is_overdue',
+            'created_at', 'updated_at', 'assigned_at', 'completed_at', 'files'
+        ]
+        read_only_fields = [
+            'id', 'client', 'assigned_expert', 'status', 'progress_percentage',
+            'created_at', 'updated_at', 'assigned_at', 'completed_at'
+        ]
+    
     def get_time_to_deadline(self, obj):
-        now = timezone.now()
-        if obj.deadline < now:
-            return "Overdue"
-        delta = obj.deadline - now
-        days = delta.days
-        hours = delta.seconds // 3600
-        weeks = days // 7
-        if weeks >= 1:
-            return f"{weeks} week(s), {days % 7} day(s)"
-        if days >= 1:
-            return f"{days} day(s), {hours} hour(s)"
-            return f"{hours} hour(s)"
+        return obj.time_to_deadline()
+
+
+class TaskCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating tasks"""
+    
+    class Meta:
+        model = Task
+        fields = [
+            'title', 'description', 'category', 'complexity', 'budget_range',
+            'deadline', 'additional_comments', 'client_requirements'
+        ]
+    
+    def create(self, validated_data):
+        validated_data['client'] = self.context['request'].user
+        return super().create(validated_data)
 
 
 class TaskSubmissionSerializer(serializers.ModelSerializer):
-    expert = UserSerializer(read_only=True)
-    status = serializers.CharField(read_only=True)
-    created_at = serializers.DateTimeField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
-
+    """Serializer for TaskSubmission"""
+    expert_name = serializers.CharField(source='expert.get_full_name', read_only=True)
+    approved_by_name = serializers.CharField(source='approved_by.get_full_name', read_only=True)
+    
     class Meta:
         model = TaskSubmission
-        fields = ['id', 'task', 'expert', 'submission_file', 'description', 
-                 'status', 'feedback', 'created_at', 'updated_at']
-        read_only_fields = ['expert', 'status', 'feedback']
+        fields = [
+            'id', 'task', 'expert', 'expert_name', 'submission_text',
+            'submission_files', 'submitted_at', 'is_approved', 'approved_at',
+            'approved_by', 'approved_by_name', 'feedback'
+        ]
+        read_only_fields = [
+            'id', 'expert', 'submitted_at', 'is_approved', 'approved_at',
+            'approved_by'
+        ]
 
-    def validate_task(self, task):
-        """
-        Validate that:
-        1. The task is open for submissions
-        2. The expert is assigned to this task
-        3. The expert hasn't already submitted (unless revision requested)
-        """
-        request = self.context.get('request')
-        if not request or not request.user:
-            raise serializers.ValidationError("Authentication required")
 
-        # Check if task is open for submissions
-        if task.status not in ['in_progress', 'revision_needed']:
-            raise serializers.ValidationError(
-                "This task is not currently accepting submissions"
-            )
+class TaskMessageSerializer(serializers.ModelSerializer):
+    """Serializer for TaskMessage"""
+    sender_name = serializers.CharField(source='sender.get_full_name', read_only=True)
+    recipient_name = serializers.CharField(source='recipient.get_full_name', read_only=True)
+    message_type_display = serializers.CharField(source='get_message_type_display', read_only=True)
+    
+    class Meta:
+        model = TaskMessage
+        fields = [
+            'id', 'task', 'sender', 'sender_name', 'recipient', 'recipient_name',
+            'message', 'is_read', 'sent_at', 'message_type', 'message_type_display'
+        ]
+        read_only_fields = ['id', 'sender', 'sent_at']
 
-        # Check if the expert is assigned to this task
-        if request.user != task.assigned_expert:
-            raise serializers.ValidationError(
-                "You are not assigned to this task"
-            )
 
-        # Check for existing submissions (unless revision requested)
-        if task.status != 'revision_needed':
-            existing_submission = TaskSubmission.objects.filter(
-                task=task,
-                expert=request.user,
-                status__in=['pending', 'accepted']
-            ).exists()
-            if existing_submission:
-                raise serializers.ValidationError(
-                    "You have already submitted work for this task"
-                )
+class TaskReviewSerializer(serializers.ModelSerializer):
+    """Serializer for TaskReview"""
+    client_name = serializers.CharField(source='client.get_full_name', read_only=True)
+    expert_name = serializers.CharField(source='expert.get_full_name', read_only=True)
+    
+    class Meta:
+        model = TaskReview
+        fields = [
+            'id', 'task', 'client', 'client_name', 'expert', 'expert_name',
+            'rating', 'comment', 'created_at'
+        ]
+        read_only_fields = ['id', 'client', 'expert', 'created_at']
 
-        return task
 
-    def create(self, validated_data):
-        # Set the expert to the current user
-        validated_data['expert'] = self.context['request'].user
-        return super().create(validated_data)
+class TaskDisputeSerializer(serializers.ModelSerializer):
+    """Serializer for TaskDispute"""
+    raised_by_name = serializers.CharField(source='raised_by.get_full_name', read_only=True)
+    resolved_by_name = serializers.CharField(source='resolved_by.get_full_name', read_only=True)
+    dispute_type_display = serializers.CharField(source='get_dispute_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = TaskDispute
+        fields = [
+            'id', 'task', 'raised_by', 'raised_by_name', 'dispute_type',
+            'dispute_type_display', 'description', 'status', 'status_display',
+            'resolution', 'resolved_by', 'resolved_by_name', 'created_at',
+            'resolved_at', 'admin_notes', 'rejection_reason'
+        ]
+        read_only_fields = [
+            'id', 'raised_by', 'status', 'resolved_by', 'created_at',
+            'resolved_at'
+        ]
+
+
+class TaskStatsSerializer(serializers.Serializer):
+    """Serializer for task statistics"""
+    total_tasks = serializers.IntegerField()
+    pending_tasks = serializers.IntegerField()
+    in_progress_tasks = serializers.IntegerField()
+    completed_tasks = serializers.IntegerField()
+    overdue_tasks = serializers.IntegerField()
+    total_revenue = serializers.DecimalField(max_digits=10, decimal_places=2)
+    average_rating = serializers.DecimalField(max_digits=3, decimal_places=2)

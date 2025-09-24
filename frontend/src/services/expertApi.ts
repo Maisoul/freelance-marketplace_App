@@ -1,3 +1,5 @@
+import axios from './axios';
+
 // Chat message type
 export interface ChatMessage {
   id: number;
@@ -17,6 +19,7 @@ export async function sendExpertChatMessage(projectId: string, text: string): Pr
   const response = await axios.post(`/api/expert/chat/${projectId}/`, { text });
   return response.data;
 }
+
 // Submit work for a project as an expert
 export async function submitExpertWork(data: {
   projectId: string;
@@ -32,7 +35,6 @@ export async function submitExpertWork(data: {
   });
   return response.data;
 }
-import axios from './axios';
 
 export interface Project {
   id: number;

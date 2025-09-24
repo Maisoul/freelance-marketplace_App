@@ -29,3 +29,7 @@ export async function submitReview(data: {
   const response = await axios.post('/api/messages/reviews/', data);
   return response.data;
 }
+
+// Alias functions for client components
+export const fetchClientReviews = fetchReviews;
+export const submitClientReview = submitReview;

@@ -11,9 +11,9 @@ export interface User {
 export interface RegisterData {
   email: string;
   password: string;
+  password_confirm: string;
   firstName: string;
   lastName: string;
-  role: 'client' | 'expert';
 }
 
 export interface AuthError {

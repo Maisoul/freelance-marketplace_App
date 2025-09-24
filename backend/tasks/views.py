@@ -7,6 +7,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from django.contrib.auth import get_user_model
+from django.db import models
 from .serializers import TaskSerializer
 from .models import Task
 

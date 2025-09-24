@@ -1,211 +1,233 @@
-# Freelance Marketplace
+# Mai-Guru: AI-Powered Freelance Platform
 
-A multi-gateway payment system for freelancers, supporting PayPal, Wise, and M-PESA.
+## 🎯 Project Overview
+Mai-Guru is a comprehensive AI-powered freelance platform designed to connect students, organizations, and freelancers with elite tech experts. The platform features dynamic pricing through web scraping, real-time project management, and integrated payment systems.
 
-## Features
+## 🚀 Key Features
 
-- Multiple payment gateways:
-  - PayPal for global payments
-  - Wise for international bank transfers
-  - M-PESA for mobile money transactions
-- Secure payment processing
-- Expert payouts system
-- Comprehensive payment tracking
-- Status notifications
+### Core Platform
+- **AI-Powered Dynamic Pricing**: Real-time market analysis and competitive quotes
+- **Multi-Role System**: Clients, Experts, and Admin with role-based access
+- **Real-Time Communication**: Integrated chat system for project collaboration
+- **Payment Integration**: M-Pesa Global, PayPal, and Wise support
+- **SEO Optimized**: Built for search visibility from day one
 
-## Setup
+### Service Categories
+- **Web Development**: React, Node.js, Python, Django
+- **AI & Machine Learning**: AI agents, chatbots, automation, NLP
+- **Cybersecurity**: Penetration testing, security audits, incident response
+- **Technical Writing**: Academic and technical documentation
 
-1. Clone the repository:
+## 🛠 Technology Stack
+
+### Backend
+- **Framework**: Django 4.2+ (Python)
+- **Database**: MySQL 8.0
+- **Authentication**: JWT with role-based access control
+- **AI Integration**: OpenAI API for chatbots and price suggestions
+- **Payment**: M-Pesa Global, PayPal, Wise APIs
+- **Web Scraping**: BeautifulSoup, Scrapy for market analysis
+
+### Frontend
+- **Framework**: React 18+ with TypeScript
+- **UI Library**: Chakra UI
+- **Routing**: React Router DOM
+- **State Management**: React Context API
+- **Build Tool**: Vite
+
+### Infrastructure
+- **Containerization**: Docker & Docker Compose
+- **Deployment**: Production-ready with environment configuration
+- **SEO**: Schema markup, meta tags, performance optimization
+
+## 📁 Project Structure
+
+```
+freelance-marketplace/
+├── backend/                 # Django backend
+│   ├── accounts/           # User management
+│   ├── tasks/              # Task/project management
+│   ├── payments/           # Payment processing
+│   ├── ai/                 # AI services (chatbot, pricing)
+│   ├── messages/           # Communication system
+│   └── marketplace/        # Main Django project
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/          # Page components
+│   │   ├── contexts/       # React contexts
+│   │   ├── services/       # API services
+│   │   └── types/          # TypeScript definitions
+├── docker-compose.yml      # Development environment
+├── Dockerfile.backend      # Backend container
+├── Dockerfile.frontend     # Frontend container
+└── README.md              # This file
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- MySQL 8.0+
+- Docker (optional)
+
+### Development Setup
+
+1. **Clone and Setup**
 ```bash
 git clone <repository-url>
 cd freelance-marketplace
 ```
 
-2. Create and activate a virtual environment:
+2. **Backend Setup**
 ```bash
+cd backend
 python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
-```
-
-3. Install dependencies:
-```bash
-cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cd ../frontend
-npm install
-```
-
-4. Set up environment variables (create a .env file in the backend directory):
-```
-# Django settings
-DJANGO_SECRET_KEY=your-secret-key
-DEBUG=1
-
-# Database settings
-MYSQL_DATABASE=your-database-name
-MYSQL_USER=your-database-user
-MYSQL_PASSWORD=your-database-password
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-
-# Email settings
-EMAIL_HOST=smtp.gmail.com
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=your-email@gmail.com
-
-# Payment Gateway Settings
-# PayPal settings
-PAYPAL_CLIENT_ID=your-paypal-client-id
-PAYPAL_CLIENT_SECRET=your-paypal-client-secret
-PAYPAL_SANDBOX=True  # Set to False for production
-
-# Wise settings
-WISE_API_KEY=your-wise-api-key
-WISE_PROFILE_ID=your-wise-profile-id
-
-# M-PESA settings
-MPESA_API_KEY=your-mpesa-api-key
-MPESA_API_SECRET=your-mpesa-api-secret
-MPESA_BUSINESS_SHORTCODE=your-mpesa-business-shortcode
-MPESA_PASSKEY=your-mpesa-passkey
-MPESA_INITIATOR_NAME=your-mpesa-initiator-name
-MPESA_SECURITY_CREDENTIAL=your-mpesa-security-credential
-```
-
-5. Run migrations:
-```bash
-cd backend
 python manage.py migrate
-```
-
-6. Create a superuser:
-```bash
 python manage.py createsuperuser
-```
-
-7. Start the development servers:
-
-Backend:
-```bash
-cd backend
 python manage.py runserver
 ```
 
-Frontend:
+3. **Frontend Setup**
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-## API Endpoints
-
-### Payments
-
-#### Payment Intents
-
-- `POST /api/payment-intents/`: Create a new payment intent
-- `GET /api/payment-intents/`: List all payment intents (staff only)
-- `GET /api/payment-intents/{id}/`: Get payment intent details
-- `POST /api/payment-intents/{id}/create_paypal_order/`: Create PayPal order
-- `POST /api/payment-intents/{id}/capture_paypal_payment/`: Capture PayPal payment
-- `POST /api/payment-intents/{id}/process_mpesa_payment/`: Process M-PESA payment
-- `POST /api/payment-intents/{id}/process_wise_payment/`: Process Wise payment
-- `POST /api/payment-intents/{id}/refund/`: Refund a payment
-
-#### Expert Payouts
-
-- `GET /api/expert-payouts/`: List expert payouts
-- `GET /api/expert-payouts/{id}/`: Get payout details
-- `POST /api/expert-payouts/{id}/process_payout/`: Process a payout
-
-#### Expert Payment Methods
-
-- `GET /api/expert-payment-methods/`: List expert's payment methods
-- `POST /api/expert-payment-methods/`: Create new payment method
-- `GET /api/expert-payment-methods/{id}/`: Get payment method details
-- `PUT /api/expert-payment-methods/{id}/`: Update payment method
-- `DELETE /api/expert-payment-methods/{id}/`: Delete payment method
-
-## Development
-
-### Adding a New Payment Gateway
-
-1. Create a new service class in `backend/payments/services/`
-2. Add necessary settings to `settings.py`
-3. Update the `PaymentIntent` model if needed
-4. Add new endpoints in the views
-5. Update serializers if needed
-6. Add documentation for the new endpoints
-
-## Deployment (Docker)
-
-1. Copy environment variables:
-
-- Create a `.env` at repo root based on the keys below:
-
-```
-# Required
-DJANGO_SECRET_KEY=change-me
-DEBUG=0
-DJANGO_ALLOWED_HOSTS=yourdomain.com
-CORS_ALLOW_ALL_ORIGINS=0
-CORS_ALLOWED_ORIGINS=https://yourfrontend.com
-
-MYSQL_DATABASE=tech_freelance_db
-MYSQL_USER=app
-MYSQL_PASSWORD=changeme
-MYSQL_ROOT_PASSWORD=changeme-root
-MYSQL_HOST=db
-MYSQL_PORT=3306
-
-EMAIL_HOST=smtp.gmail.com
-EMAIL_HOST_USER=your@gmail.com
-EMAIL_HOST_PASSWORD=app-password
-DEFAULT_FROM_EMAIL=no-reply@yourdomain.com
-SITE_URL=https://yourfrontend.com/
-
-# Optional
-OPENAI_API_KEY=
-
-PAYPAL_CLIENT_ID=
-PAYPAL_CLIENT_SECRET=
-PAYPAL_SANDBOX=True
-WISE_API_KEY=
-WISE_PROFILE_ID=
-MPESA_API_KEY=
-MPESA_API_SECRET=
-MPESA_BUSINESS_SHORTCODE=
-MPESA_PASSKEY=
-MPESA_INITIATOR_NAME=
-MPESA_SECURITY_CREDENTIAL=
-
-VITE_API_URL=https://api.yourdomain.com
+4. **Docker Setup (Alternative)**
+```bash
+docker-compose up --build
 ```
 
-2. Build and run:
+### Environment Variables
+Create `.env` files in both backend and frontend directories:
 
+**Backend (.env)**
+```env
+SECRET_KEY=your-secret-key
+DEBUG=True
+DATABASE_URL=mysql://user:password@localhost:3306/maiguru_db
+OPENAI_API_KEY=your-openai-key
+EMAIL_HOST_USER=your-email
+EMAIL_HOST_PASSWORD=your-email-password
 ```
-docker compose build
-docker compose up -d
+
+**Frontend (.env)**
+```env
+VITE_API_URL=http://localhost:8000
 ```
 
-3. Initialize database and admin:
+## 🎯 User Roles & Access
 
+### Admin (Super User)
+- **Login**: Password-based authentication
+- **Dashboard**: Task management, expert invitations, payment processing
+- **AI Tools**: Chatbot for client support, pricing suggestions
+- **Management**: User management, system analytics
+
+### Clients
+- **Registration**: Student or Organization packages
+- **Task Submission**: Detailed project requirements with file uploads
+- **Dashboard**: Project tracking, payment management, communication
+- **Support**: AI chatbot for assistance
+
+### Experts
+- **Invitation**: Email-based invitation system with 24-hour expiry
+- **Registration**: Pre-populated forms with expertise selection
+- **Dashboard**: Project details, submission management, client communication
+
+## 💰 Monetization Model
+
+1. **Commission Fee**: 10% on projects secured through platform
+2. **Subscription Tiers**: Expert "Pro" profiles ($19/month) - Future
+3. **AI Pricing Reports**: Market analysis reports ($49/report) - Future
+
+## 🔒 Security Features
+
+- **Authentication**: JWT-based with role-based access control
+- **Data Encryption**: Sensitive data encryption at rest and in transit
+- **File Upload Security**: Validated file types and size limits
+- **Payment Security**: PCI-compliant payment processing
+- **Admin Security**: Secure superuser authentication
+
+## 📈 SEO Strategy
+
+### Technical SEO
+- **URL Structure**: Clean, descriptive URLs (/services/ai-development/)
+- **Schema Markup**: Service, WebPage, Article schemas
+- **Performance**: Optimized loading speeds, mobile-first design
+- **Meta Tags**: Dynamic meta descriptions and titles
+
+### Content Strategy
+- **Target Keywords**: "AI development services", "cybersecurity consulting", "Python web developer"
+- **Content Engine**: Integrated blog for cornerstone content
+- **Link Building**: White-hat strategies for domain authority
+
+## 🧪 Testing
+
+### Backend Testing
+```bash
+cd backend
+python manage.py test
 ```
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py createsuperuser
+
+### Frontend Testing
+```bash
+cd frontend
+npm test
 ```
 
-4. Access services:
+### Security Testing
+- Authentication flow testing
+- File upload validation
+- Payment processing security
+- Admin access controls
 
-- API: http://localhost:8000
-- Frontend: http://localhost:5173
+## 🚀 Deployment
 
-## Production notes
+### Production Environment
+1. **Backend**: Deploy Django app with Gunicorn
+2. **Frontend**: Build and serve static files
+3. **Database**: MySQL with proper indexing
+4. **CDN**: Static asset delivery
+5. **SSL**: HTTPS enforcement
 
-- Set proper `DJANGO_ALLOWED_HOSTS` and restrict CORS.
-- Configure reverse proxy (e.g., Nginx) with TLS for both API and frontend.
-- Set up email credentials for invite emails.
-- Provide payment provider credentials (PayPal/Wise/M-Pesa) before enabling real payments.
+### Docker Production
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## 📊 Analytics & Monitoring
+
+- **User Analytics**: Google Analytics integration
+- **Performance Monitoring**: Application performance tracking
+- **Error Tracking**: Comprehensive error logging
+- **Payment Monitoring**: Transaction tracking and reporting
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 📞 Support
+
+For support and inquiries:
+- **Email**: support@maiguru.com
+- **Documentation**: [Link to documentation]
+- **Issues**: [GitHub Issues]
+
+---
+
+**Mai-Guru** - *Tell a Friend to Tell a Friend* 🙂
+*Integrity, Quality & Prompt Service*

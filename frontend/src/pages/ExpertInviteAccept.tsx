@@ -1,15 +1,14 @@
 import React, { useState } from "react";
+import { Box, Heading, FormControl, FormLabel, Input, Button, VStack, Alert, AlertIcon, Container } from '@chakra-ui/react';
+import { useParams } from 'react-router-dom';
 
-const ExpertInviteAccept = () => {
+const ExpertInviteAccept: React.FC = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Get token from URL query string
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("token");
+  const { token } = useParams<{ token: string }>();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,36 +34,66 @@ const ExpertInviteAccept = () => {
   };
 
   if (!token) {
-    return <div>Invalid or missing invite token.</div>;
+    return (
+      <Container maxW="md" py={10}>
+        <Alert status="error">
+          <AlertIcon />
+          Invalid or missing invite token.
+        </Alert>
+      </Container>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Accept Expert Invite</h2>
-      <input
-        type="password"
-        placeholder="Choose a password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      /><br />
-      <input
-        type="text"
-        placeholder="First name"
-        value={firstName}
-        onChange={(e) => setFirstName(e.target.value)}
-      /><br />
-      <input
-        type="text"
-        placeholder="Last name"
-        value={lastName}
-        onChange={(e) => setLastName(e.target.value)}
-      /><br />
-      <button type="submit" disabled={loading}>
-        {loading ? "Submitting..." : "Accept Invite"}
-      </button>
-      {message && <div>{message}</div>}
-    </form>
+    <Container maxW="md" py={10}>
+      <Box as="form" onSubmit={handleSubmit}>
+        <VStack spacing={4} align="stretch">
+          <Heading size="lg" textAlign="center">Accept Expert Invite</Heading>
+          
+          <FormControl>
+            <FormLabel>Password</FormLabel>
+            <Input
+              type="password"
+              placeholder="Choose a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </FormControl>
+          
+          <FormControl>
+            <FormLabel>First Name</FormLabel>
+            <Input
+              type="text"
+              placeholder="First name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </FormControl>
+          
+          <FormControl>
+            <FormLabel>Last Name</FormLabel>
+            <Input
+              type="text"
+              placeholder="Last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </FormControl>
+          
+          <Button type="submit" colorScheme="blue" isLoading={loading} loadingText="Submitting...">
+            Accept Invite
+          </Button>
+          
+          {message && (
+            <Alert status={message.includes("created") ? "success" : "error"}>
+              <AlertIcon />
+              {message}
+            </Alert>
+          )}
+        </VStack>
+      </Box>
+    </Container>
   );
 };
 

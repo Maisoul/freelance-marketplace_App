@@ -1,13 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import { Box, Heading, Text } from '@chakra-ui/react';
 
 const TaskDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Task Details</h2>
-      <p>Viewing details for task ID: {id}</p>
-    </div>
+    <Box p={8}>
+      <Heading size="lg" mb={4}>Task Details</Heading>
+      <Text>Viewing details for task ID: {id}</Text>
+    </Box>
   );
 };
 
