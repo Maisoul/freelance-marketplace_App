@@ -45,12 +45,29 @@ class User(AbstractUser):
 
 class ClientProfile(models.Model):
     """
-    Extended profile for client users
+    Extended profile for client users with type-specific fields
     """
+    ORGANIZATION_SIZES = (
+        ('1-50', '1-50 staff'),
+        ('51-100', '51-100 staff'),
+        ('101-500', '101-500 staff'),
+        ('500+', '500+ staff'),
+    )
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client_profile')
     country = models.CharField(max_length=100, blank=True)
+
+    # Student-specific
+    student_id = models.CharField(max_length=50, blank=True)
+    institution = models.CharField(max_length=200, blank=True)
+
+    # Organization-specific
     company_name = models.CharField(max_length=200, blank=True)
     company_email = models.EmailField(blank=True)
+    company_size = models.CharField(max_length=20, choices=ORGANIZATION_SIZES, blank=True)
+    company_domain = models.CharField(max_length=100, blank=True)
+
+    # Legacy/optional fields retained for compatibility
     contact_person = models.CharField(max_length=100, blank=True)
     budget_preference = models.CharField(max_length=50, blank=True)
     preferred_communication = models.CharField(max_length=20, choices=[
@@ -58,7 +75,7 @@ class ClientProfile(models.Model):
         ('phone', 'Phone'),
         ('chat', 'Chat'),
     ], default='email')
-    
+
     def __str__(self):
         return f"{self.user.username} - Client Profile"
 

@@ -84,17 +84,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setError(null);
       // Only allow client registration - experts are invited only
       const endpoint = '/api/accounts/register/client/';
-      
-      // Transform frontend data to match backend expectations
-      const backendData = {
-        username: userData.email, // Use email as username
+
+      const clientType = userData.clientType || 'student';
+      const backendData: Record<string, unknown> = {
+        username: userData.email,
         email: userData.email,
         password: userData.password,
         password_confirm: userData.password_confirm,
         first_name: userData.firstName,
         last_name: userData.lastName,
-        user_type: 'student', // Default to student
+        user_type: clientType,
       };
+
+      if (clientType === 'student') {
+        backendData['phone'] = userData.phone;
+      } else if (clientType === 'organization') {
+        backendData['company_name'] = userData.companyName;
+        backendData['company_size'] = userData.companySize;
+      }
       
       const response = await axiosInstance.post<{ access?: string; refresh?: string }>(endpoint, backendData);
       const { access, refresh } = response.data;

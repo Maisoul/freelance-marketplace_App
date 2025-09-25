@@ -8,28 +8,22 @@ import {
   Image,
   Heading,
 } from '@chakra-ui/react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/useAuth';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
-  const navigate = useNavigate();
   const bg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-
-  const handleLogoClick = () => {
-    // Admin login via logo click
-    navigate('/admin/login');
-  };
 
   return (
     <Box bg={bg} px={4} boxShadow="sm" borderBottom="1px" borderColor={borderColor}>
       <Flex h={16} alignItems="center" maxW="7xl" mx="auto">
         <HStack spacing={4} alignItems="center">
           <HStack
+            as={Link}
+            to="/"
             spacing={3}
-            cursor="pointer"
-            onClick={handleLogoClick}
             _hover={{ opacity: 0.8 }}
             transition="opacity 0.2s"
           >

@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.db import transaction
 from .models import PaymentIntent, ExpertPayout, ExpertPaymentMethod
@@ -11,6 +11,7 @@ from .serializers import (
 from .services.wise_service import WiseService
 from .services.mpesa_service import MPESAService
 from .services.paypal_service import PayPalService
+from rest_framework.permissions import IsAuthenticated
 
 class PaymentIntentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentIntentSerializer
@@ -50,13 +51,11 @@ class PaymentIntentViewSet(viewsets.ModelViewSet):
             
             return Response({
                 "order_id": order['id'],
-                "links": order['links']
+                "links": order.get('links', [])
             })
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(detail=True, methods=['post'])
     def capture_paypal_payment(self, request, pk=None):
@@ -242,10 +241,7 @@ class ExpertPayoutViewSet(viewsets.ReadOnlyModelViewSet):
             
             return Response(ExpertPayoutSerializer(payout).data)
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExpertPaymentMethodViewSet(viewsets.ModelViewSet):
@@ -285,3 +281,20 @@ class ExpertPaymentMethodViewSet(viewsets.ModelViewSet):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_paypal_order(request):
+    """API endpoint to create a PayPal order"""
+    try:
+        amount = request.data.get('amount')
+        currency = request.data.get('currency', 'USD')
+        if not amount:
+            return Response({'error': 'Amount is required', 'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        paypal_service = PayPalService()
+        order = paypal_service.create_order(amount=amount, currency=currency)
+        return Response({'order_id': order['id'], 'links': order.get('links', []), 'success': True}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e), 'success': False}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

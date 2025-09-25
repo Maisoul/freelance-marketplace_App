@@ -95,6 +95,32 @@ class Task(models.Model):
     def can_be_completed(self):
         return self.status in ['in_progress', 'assigned', 'review', 'revision_needed']
     
+    def assign_expert(self, expert: User):
+        if self.status not in ['pending', 'revision_needed']:
+            raise ValueError("Cannot assign expert in the current status")
+        self.assigned_expert = expert
+        self.status = 'assigned'
+        self.assigned_at = timezone.now()
+        self.save(update_fields=['assigned_expert', 'status', 'assigned_at', 'updated_at'])
+
+    def start_work(self):
+        if self.status != 'assigned':
+            raise ValueError("Task must be in 'assigned' to start work")
+        self.status = 'in_progress'
+        self.save(update_fields=['status', 'updated_at'])
+
+    def request_revision(self):
+        if self.status not in ['review', 'in_progress', 'assigned']:
+            raise ValueError("Cannot request revision in the current status")
+        self.status = 'revision_needed'
+        self.save(update_fields=['status', 'updated_at'])
+
+    def cancel(self):
+        if self.status in ['completed', 'cancelled']:
+            raise ValueError("Task is already completed or cancelled")
+        self.status = 'cancelled'
+        self.save(update_fields=['status', 'updated_at'])
+
     def complete(self):
         """Mark task as completed"""
         if not self.can_be_completed():

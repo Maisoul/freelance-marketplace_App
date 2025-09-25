@@ -71,10 +71,9 @@ class TaskViewSet(ModelViewSet):
         user = self.request.user
         if user.is_staff:
             return Task.objects.all()
-        if user.role == 'expert':
+        if getattr(user, 'role', None) == 'expert':
             return Task.objects.filter(
-                models.Q(assigned_expert=user) |
-                models.Q(status='open')
+                models.Q(assigned_expert=user)
             )
         return Task.objects.filter(client=user)
 

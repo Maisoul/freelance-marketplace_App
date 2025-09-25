@@ -1,8 +1,8 @@
 """
 Views for accounts app
 """
-from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -16,8 +16,8 @@ import uuid
 
 from .models import User, ExpertInvitation, Notification
 from .serializers import (
-    UserSerializer, ClientProfileSerializer, ExpertProfileSerializer,
     ClientRegistrationSerializer, ExpertRegistrationSerializer,
+    UserSerializer, ClientProfileSerializer, ExpertProfileSerializer,
     ExpertInvitationSerializer, NotificationSerializer, PasswordChangeSerializer
 )
 
@@ -50,7 +50,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_admin():
+        if hasattr(self.request.user, 'is_admin') and self.request.user.is_admin():
             return User.objects.all()
         return User.objects.filter(id=self.request.user.id)
 
@@ -58,9 +58,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def profile(self, request):
         """Get user profile with extended information"""
         user = request.user
-        if user.is_client():
+        if hasattr(user, 'is_client') and user.is_client() and hasattr(user, 'client_profile'):
             serializer = ClientProfileSerializer(user.client_profile)
-        elif user.is_expert():
+        elif hasattr(user, 'is_expert') and user.is_expert() and hasattr(user, 'expert_profile'):
             serializer = ExpertProfileSerializer(user.expert_profile)
         else:
             serializer = UserSerializer(user)
@@ -75,25 +75,19 @@ class ClientRegistrationView(APIView):
         serializer = ClientRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response(
-                UserSerializer(user).data,
-                status=status.HTTP_201_CREATED
-            )
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExpertRegistrationView(APIView):
-    """Expert registration via invitation endpoint"""
+    """Expert registration via invitation endpoint (token-based)"""
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = ExpertRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response(
-                UserSerializer(user).data,
-                status=status.HTTP_201_CREATED
-            )
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -104,50 +98,106 @@ class ExpertInvitationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_admin():
+        if hasattr(self.request.user, 'is_admin') and self.request.user.is_admin():
             return ExpertInvitation.objects.all()
         return ExpertInvitation.objects.filter(invited_by=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(invited_by=self.request.user)
+        # Create token and expiry on creation, then send email
+        token = uuid.uuid4().hex
+        expires = timezone.now() + timedelta(hours=24)
+        instance = serializer.save(invited_by=self.request.user, token=token, expires_at=expires)
+
+        invite_url = f"{settings.SITE_URL}/invite/expert/accept?token={instance.token}"
+        send_mail(
+            subject='Invitation to Join Mai-Guru Platform',
+            message=(
+                f"You have been invited to join Mai-Guru as an expert in {instance.get_expertise_display()}.\n\n"
+                f"Click the link below to accept the invitation (expires in 24 hours):\n{invite_url}\n\n"
+                "Best regards,\nMai-Guru Team"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[instance.email],
+            fail_silently=False,
+        )
 
     @action(detail=True, methods=['post'])
-    def send_invitation(self, request, pk=None):
-        """Send invitation email to expert"""
-        invitation = self.get_object()
-        
-        # Generate token if not exists
-        if not invitation.token:
-            invitation.token = str(uuid.uuid4())
-            invitation.expires_at = timezone.now() + timedelta(hours=24)
-            invitation.save()
+    def resend(self, request, pk=None):
+        instance = self.get_object()
+        if instance.is_used:
+            return Response({'error': 'Invitation already used'}, status=status.HTTP_400_BAD_REQUEST)
+        if instance.is_expired():
+            instance.token = uuid.uuid4().hex
+            instance.expires_at = timezone.now() + timedelta(hours=24)
+            instance.save(update_fields=['token', 'expires_at'])
+        invite_url = f"{settings.SITE_URL}/invite/expert/accept?token={instance.token}"
+        send_mail(
+            subject='Invitation to Join Mai-Guru Platform',
+            message=(
+                f"You have been invited to join Mai-Guru as an expert in {instance.get_expertise_display()}.\n\n"
+                f"Click the link below to accept the invitation (expires in 24 hours):\n{invite_url}\n\n"
+                "Best regards,\nMai-Guru Team"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[instance.email],
+            fail_silently=False,
+        )
+        return Response({'message': 'Invitation email sent'})
 
-        # Send email
+
+class ExpertInviteAcceptView(APIView):
+    """Accept expert invite using token and set password"""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        password = request.data.get('password')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+
+        if not token or not password:
+            return Response({'error': 'Token and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            send_mail(
-                subject='Invitation to Join Mai-Guru Platform',
-                message=f'''
-                You have been invited to join Mai-Guru as an expert in {invitation.get_expertise_display()}.
-                
-                Click the link below to accept the invitation:
-                {settings.SITE_URL}invite/{invitation.token}
-                
-                This invitation expires in 24 hours.
-                
-                Best regards,
-                Mai-Guru Team
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[invitation.email],
-                fail_silently=False,
-            )
-            
-            return Response({'message': 'Invitation sent successfully'})
-        except Exception as e:
-            return Response(
-                {'error': f'Failed to send invitation: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            invitation = ExpertInvitation.objects.get(token=token)
+        except ExpertInvitation.DoesNotExist:
+            return Response({'error': 'Invalid invitation token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not invitation.is_valid():
+            return Response({'error': 'Invitation token is expired or already used'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a username from email local part if not provided
+        username = invitation.email.split('@')[0]
+        base_username = username
+        suffix = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{suffix}"
+            suffix += 1
+
+        # Create the user account
+        user = User.objects.create_user(
+            username=username,
+            email=invitation.email,
+            password=password,
+            role='expert',
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        # Minimal expert profile with default expertise
+        from .models import ExpertProfile
+        if not hasattr(ExpertProfile, 'EXPERTISE_CHOICES'):
+            default_expertise = 'web_development'
+        else:
+            default_expertise = ExpertProfile.EXPERTISE_CHOICES[0][0]
+        ExpertProfile.objects.create(user=user, expertise=default_expertise)
+
+        # Mark invitation as used
+        invitation.is_used = True
+        invitation.used_at = timezone.now()
+        invitation.save(update_fields=['is_used', 'used_at'])
+
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 class PasswordChangeView(APIView):

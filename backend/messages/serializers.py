@@ -2,7 +2,8 @@
 Serializers for messages app
 """
 from rest_framework import serializers
-from .models import Message, Review, Invoice
+from .models import Message, Review
+from payments.models import Invoice
 from tasks.serializers import TaskSerializer
 from accounts.serializers import UserSerializer
 

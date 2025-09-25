@@ -14,6 +14,10 @@ export interface RegisterData {
   password_confirm: string;
   firstName: string;
   lastName: string;
+  clientType?: 'student' | 'organization';
+  phone?: string; // student contact
+  companyName?: string;
+  companySize?: '1-50' | '51-100' | '101-500' | '500+';
 }
 
 export interface AuthError {

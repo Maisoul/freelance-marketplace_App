@@ -1,7 +1,8 @@
 # messages/views.py
 from rest_framework import generics, permissions, viewsets
 from .models import Message
-from .models import Review, Invoice
+from .models import Review
+from payments.models import Invoice
 from .serializers import MessageSerializer, ReviewSerializer, InvoiceSerializer
 
 class MessageListCreateView(generics.ListCreateAPIView):

@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 
 export default function AdminLogin() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,23 +36,20 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      // Use the specific admin email and provided password
-      await login('admin@maiguru.com', password);
-      
+      await login(email, password);
       toast({
         title: 'Login Successful',
-        description: 'Welcome to Mai-Guru Admin Dashboard',
+        description: 'Welcome to the Admin Dashboard',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      
-      navigate('/admin/dashboard');
-    } catch (error) {
-      setError('Invalid password. Please try again.');
+      // Redirect handled by auth context based on role.
+    } catch {
+      setError('Invalid credentials. Please try again.');
       toast({
         title: 'Login Failed',
-        description: 'Invalid credentials. Please check your password.',
+        description: 'Invalid email or password.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -90,12 +88,24 @@ export default function AdminLogin() {
                 <form onSubmit={handleSubmit}>
                   <VStack spacing={4}>
                     <FormControl isInvalid={!!error}>
-                      <FormLabel>Admin Password</FormLabel>
+                      <FormLabel>Email</FormLabel>
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter admin email"
+                        size="lg"
+                        required
+                      />
+                    </FormControl>
+
+                    <FormControl isInvalid={!!error}>
+                      <FormLabel>Password</FormLabel>
                       <Input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter admin password"
+                        placeholder="Enter password"
                         size="lg"
                         required
                       />

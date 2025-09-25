@@ -85,18 +85,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'marketplace.wsgi.application'
 
 # Database
-# Use SQLite for easier setup, can be changed to MySQL later
+# Enforce MySQL by default; configurable via environment
 DATABASES = {
     'default': {
-        'ENGINE': env('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': env('MYSQL_DATABASE', default=os.path.join(BASE_DIR, 'db.sqlite3')),
-        'USER': env('MYSQL_USER', default=''),
-        'PASSWORD': env('MYSQL_PASSWORD', default=''),
-        'HOST': env('MYSQL_HOST', default=''),
-        'PORT': env('MYSQL_PORT', default=''),
+        'ENGINE': env('DB_ENGINE', default='django.db.backends.mysql'),
+        'NAME': env('DB_NAME', default='maiguru_db'),
+        'USER': env('DB_USER', default='maiguru_user'),
+        'PASSWORD': env('DB_PASSWORD', default='maiguru123'),
+        'HOST': env('DB_HOST', default='127.0.0.1'),
+        'PORT': env('DB_PORT', default='3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        } if env('DB_ENGINE', default='django.db.backends.sqlite3') == 'django.db.backends.mysql' else {},
+        },
     }
 }
 
@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    }
 ]
 
 # Internationalization

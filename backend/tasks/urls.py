@@ -15,12 +15,10 @@ urlpatterns = [
     path('list/', TaskListView.as_view(), name='task-list'),
     path('bulk_delete/', bulk_delete_tasks, name='task-bulk-delete'),
     
-    # Client-specific views
+    # Client-specific views (aliases compatible with frontend)
     path("create/", TaskCreateView.as_view(), name="task_create"),
     path("my-tasks/", ClientTaskListView.as_view(), name="client_tasks"),
-    
-    # Admin-specific view
-    path("admin/tasks/", AdminTaskListView.as_view(), name="admin_tasks"),
+    path("../client/tasks/", ClientTaskListView.as_view(), name="client_tasks_alias"),
 ]
 
 # Note: The TaskViewSet is a ModelViewSet and is typically registered

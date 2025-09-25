@@ -26,7 +26,20 @@ export default function Footer() {
           {/* Company Info */}
           <VStack align="start" spacing={4}>
             <Heading size="md" color="blue.600">
-              Mai-Guru
+              <HStack spacing={4} alignItems="center">
+                        <HStack
+                          as={Link}
+                          to="/admin/login"
+                          spacing={3}
+                          _hover={{ opacity: 0.8 }}
+                          transition="opacity 0.2s"
+                        >
+                          
+                          <Heading size="md" color="blue.600">
+                            Mai-Guru
+                          </Heading>
+                        </HStack>
+                      </HStack>
             </Heading>
             <Text color={textColor} fontSize="sm">
               Your AI-powered freelance platform connecting students and organizations 
@@ -105,7 +118,7 @@ export default function Footer() {
         <Box mt={8} pt={8} borderTop="1px" borderColor={borderColor}>
           <HStack justify="space-between" align="center">
             <Text color={textColor} fontSize="sm">
-              © {new Date().getFullYear()} Mai-Guru. All rights reserved.
+              © 2025 Freelance Marketplace. All rights reserved.
             </Text>
             <HStack spacing={4}>
               <ChakraLink

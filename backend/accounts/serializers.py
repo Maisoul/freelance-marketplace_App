@@ -47,30 +47,39 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
 
 
 class ClientRegistrationSerializer(serializers.ModelSerializer):
-    """Serializer for client registration"""
+    """Serializer for client registration with org email domain validation"""
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
     
     # Client profile fields
     country = serializers.CharField(write_only=True, required=False)
+    # Student-specific
+    student_id = serializers.CharField(write_only=True, required=False)
+    institution = serializers.CharField(write_only=True, required=False)
+    # Organization-specific
     company_name = serializers.CharField(write_only=True, required=False)
     company_email = serializers.EmailField(write_only=True, required=False)
-    contact_person = serializers.CharField(write_only=True, required=False)
-    budget_preference = serializers.CharField(write_only=True, required=False)
-    preferred_communication = serializers.CharField(write_only=True, required=False)
+    company_size = serializers.CharField(write_only=True, required=False)
     
     class Meta:
         model = User
         fields = [
             'username', 'email', 'password', 'password_confirm',
             'first_name', 'last_name', 'user_type', 'phone_number',
-            'country', 'company_name', 'company_email', 'contact_person',
-            'budget_preference', 'preferred_communication'
+            'country', 'student_id', 'institution', 'company_name',
+            'company_email', 'company_size'
         ]
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Passwords don't match")
+        # Organization email validation
+        if attrs.get('user_type') == 'organization':
+            email = attrs.get('email', '')
+            domain = email.split('@')[-1].lower() if email else ''
+            public_domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']
+            if domain in public_domains:
+                raise serializers.ValidationError("Organization email must not be a public domain")
         return attrs
     
     def create(self, validated_data):
@@ -78,11 +87,11 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('password_confirm')
         profile_data = {
             'country': validated_data.pop('country', ''),
+            'student_id': validated_data.pop('student_id', ''),
+            'institution': validated_data.pop('institution', ''),
             'company_name': validated_data.pop('company_name', ''),
             'company_email': validated_data.pop('company_email', ''),
-            'contact_person': validated_data.pop('contact_person', ''),
-            'budget_preference': validated_data.pop('budget_preference', ''),
-            'preferred_communication': validated_data.pop('preferred_communication', 'email'),
+            'company_size': validated_data.pop('company_size', ''),
         }
         
         # Create user
@@ -90,6 +99,11 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
             role='client',
             **validated_data
         )
+        
+        # Derive company domain
+        company_email = profile_data.get('company_email')
+        if company_email:
+            profile_data['company_domain'] = company_email.split('@')[-1].lower()
         
         # Create client profile
         ClientProfile.objects.create(user=user, **profile_data)

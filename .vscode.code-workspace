@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".vscode"
+		},
+		{
+			"path": "backend"
+		},
+		{
+			"path": "frontend"
+		}
+	],
+	"settings": {}
+}

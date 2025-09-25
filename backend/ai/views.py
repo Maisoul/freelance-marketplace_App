@@ -23,11 +23,11 @@ class ChatbotView(APIView):
 class PriceSuggestionView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        category = request.data.get('category', 'dev')
-        complexity = request.data.get('complexity', 'simple')
+        category = request.data.get('category', 'web_development')
+        complexity = request.data.get('complexity', 'moderate')
         price_service = PriceSuggestionService()
-        suggestion = price_service._get_cached_market_data(category)
-        return Response({'suggestion': suggestion.get(complexity, {})})
+        suggestion = price_service.cached_suggest(category, complexity)
+        return Response({'suggestion': suggestion})
 
 # ViewSets for the main URLs
 class ChatSessionViewSet(viewsets.ModelViewSet):
@@ -44,3 +44,5 @@ class ChatSessionViewSet(viewsets.ModelViewSet):
         ai_service = AIBotService()
         response = ai_service.get_chatbot_response(message, user_type)
         return Response({'response': response})
+
+

@@ -48,7 +48,7 @@ export default function LandingPage() {
               bg="purple.100"
               color="purple.700"
             >
-              Integrity, Quality & Prompt Service
+              Integrity, Quality & Prompt
             </Badge>
             <Heading as="h1" size="2xl" lineHeight="1.2" color="blue.700" fontWeight="bold">
               Tell a Friend to Tell a Friend 🙂
@@ -71,7 +71,7 @@ export default function LandingPage() {
                 color="white"
                 fontWeight="bold"
               >
-                Start Your Project
+                WORK with US
               </Button>
               <Button
                 as={Link}
@@ -396,7 +396,7 @@ export default function LandingPage() {
                   fontWeight="bold"
                   _hover={{ bg: 'whiteAlpha.800', color: 'blue.700' }}
                 >
-                  Work with Us
+                  WORK with US
                 </Button>
                 <Button
                   as={Link}
